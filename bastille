@@ -1,0 +1,28 @@
+#!/bin/bash
+
+ALLOWED="echo sed awk tee bind mkdir pwd ls fmt file dd bc make cp whoami su bbash cat"
+
+# Build a folder for the "jail" with only the allowed binaries to be run
+if [ "$1" == "build" ]; then
+    path=/opt/bin
+    mkdir -p $path
+    echo "[*] Made new jail in $path"
+    for i in $ALLOWED; do
+        if [ "$(which $i)" != "" ]; then
+            ln -s $(which $i) $path/$i
+        else
+            echo "$i not found. Skipping"
+        fi
+    done
+    echo -e "#!/bin/bash\necho You are not allowed to ssh!" > /opt/bin/ssh
+    chmod +x /opt/bin/ssh
+    chmod 555 /opt/bin # cant write to this folder
+    mkdir -p /opt/cwd
+    chmod 777 /opt/cwd # can do anything in cwd
+else
+    rm -fr /opt/cwd/*
+    cd /opt/cwd
+    export LESSSECURE=1
+    export PATH=/opt/bin
+    /bin/bbash 
+fi
