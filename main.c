@@ -11,6 +11,13 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+
+#ifdef DEBUG
+#define DEBUG_PRINT(...) do{ fprintf( stderr, __VA_ARGS__ ); } while( false )
+#else
+#define DEBUG_PRINT(...) do{ } while ( false )
+#endif
+
 // The original path we start in goes here
 char cwd[1024];
 
@@ -47,7 +54,7 @@ int shell_cd(char **args)
         fprintf(stderr, "bastille: cant cd to %s\n", abspath);
         return 1;
     }
-    printf("abs is %s\n", abspath);
+    DEBUG_PRINT("abs is %s\n", abspath);
     free(abspath);
     if (chdir(args[1]) != 0) {
       perror("bastille");
@@ -61,6 +68,8 @@ int bastille_launch(char **args)
   pid_t pid;
   int status;
 
+  char env[1024] = "";
+  snprintf(env, 1024, "_=%s", args[0]);
   pid = fork();
   if (pid == 0) {
     // Child process
@@ -86,6 +95,21 @@ int shell_help(char **args) {
     return 1;
 }
 
+void load_env(char * path) {
+    
+    int bufferLength = 256;
+    char buffer[bufferLength];
+    FILE* fil = fopen(path, "r");
+    if (fil == NULL) {
+      return;
+    }
+    while(fgets(buffer, bufferLength, fil)) {
+        printf("%s\n", buffer);
+    }
+
+    fclose(fil);
+}
+
 int bastille_execute(char **args, char **envp)
 {
     // An empty command was entered.
@@ -93,20 +117,36 @@ int bastille_execute(char **args, char **envp)
         return 1;
     }
 
+    // Dont allow execution of bins by name
+    if (args[0][0] == '.' || args[0][0] == '/') {
+        DEBUG_PRINT("execution of path blocked");
+        fprintf(stderr, "%s: no such file or directory\n", args[0]);
+        return 1;
+    }
+
+    // Loop through the args to make sure "flag" isnt in any of them
     for (int i = 0; i < 19; i++) {
         if (args[i] == NULL) {
             break;
         }
+
+        DEBUG_PRINT("handling arg[%i] = %s: ", i, args[i]);
+        // If flag is in the arg, error out
         if (strstr(args[i], "flag") != NULL) {
+            DEBUG_PRINT("'flag' blocked\n", i, args[i]);
             fprintf(stderr, "%s: no such file or directory\n", args[0]);
             return 1;
         }
+
+        // resolve environment vars here
+        if (args[i][0] == '$') {
+          DEBUG_PRINT("variable resolved to '%s'\n", getenv((char *)(args[i]+1)));
+          args[i] = getenv((char *)(args[i]+1));
+        }
+        DEBUG_PRINT("\n");
     }
 
-    if (args[0][0] == '.' || args[0][0] == '/') {
-        fprintf(stderr, "%s: no such file or directory\n", args[0]);
-        return 1;
-    }
+
 
     if (strcmp(args[0], "cd") == 0) {
         return shell_cd(args);
@@ -162,12 +202,7 @@ char **bastille_split_line(char *line)
 
   token = strtok(line, bastille_TOK_DELIM);
   while (token != NULL) {
-    if (token[0] == '$') {
-        tokens[position] = getenv((char *)(token+1));
-    } else {
-        tokens[position] = token;
-    }
-
+    tokens[position] = token;
     position++;
 
     if (position >= bufsize) {
@@ -175,7 +210,7 @@ char **bastille_split_line(char *line)
       tokens_backup = tokens;
       tokens = realloc(tokens, bufsize * sizeof(char*));
       if (!tokens) {
-		free(tokens_backup);
+		    free(tokens_backup);
         fprintf(stderr, "bastille: allocation error\n");
         exit(EXIT_FAILURE);
       }
@@ -211,6 +246,15 @@ int main(int argc, char **argv, char **envp)
 {
     signal(SIGINT, exit_prompt);
     getcwd(cwd, sizeof(cwd));
+
+    char path[1024] = "PATH=/opt/bin";
+    if (argc > 1) {
+      snprintf(path, 1024, "PATH=%s", argv[1]);
+    }
+    putenv(path);
+    putenv("TERM=xterm");
+    DEBUG_PRINT("PATH = %s\n", getenv("PATH"));
+    load_env(".env");
     bastille_loop(envp);
     return EXIT_SUCCESS;
 }

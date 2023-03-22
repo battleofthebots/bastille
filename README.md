@@ -16,10 +16,3 @@ services:
     user: user
     restart: always
 ```
-
-## Releaseing
-To build a _release_ zip for the competitors to analyze, run the following command. This release zip has everything the competitors need to run the server themselves and uses the "compiled" python instead of source code.
-
-```
-make release
-```
