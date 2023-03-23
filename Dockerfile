@@ -16,10 +16,10 @@ RUN apt-get update && \
 # Password for sshd is one of these
 COPY rockyou15.txt /tmp
 
-# Bins they are allowed to have in jail AWK is the escape trick here, see GTFO bins, they can also escape using SSH
+# Bins they are allowed to have in jail AWK/SED is the escape trick here, see GTFO bins, they can also escape using SSH
 # CWD for the jail
 # Bin dir for the jail
-ARG ALLOWED="echo sed tee bind mkdir pwd ls fmt file dd bc make cp whoami su bastille cat"
+ARG ALLOWED="echo sed tee bind mkdir xxd strings pwd ls fmt file dd bc make cp whoami su bastille cat"
 ARG JAIL_CWD=/opt/cwd
 ARG JAIL_BIN=/opt/bin
 
@@ -36,11 +36,12 @@ RUN mkdir -p $JAIL_BIN $JAIL_CWD; for i in $ALLOWED; do ln -s $(which $i) $JAIL_
     chmod 700 /run/sshd && \
     ssh-keygen -A && \
     echo "user:$(shuf -n 1 /tmp/rockyou15.txt)" | tee /dev/stderr | chpasswd && \
-    echo 'MaxAuthTries 5\nUsePAM no\nPermitTunnel no\nAcceptEnv LANG LC_*' > /etc/ssh/sshd_config
+    echo 'UsePAM no\nPermitTunnel no\nAcceptEnv LANG LC_*' > /etc/ssh/sshd_config
 
 
-ENV PAGER=cat
 # Compile bastille and cleanup
 COPY main.c /opt
+
+# -DDEBUG
 RUN gcc -o /bin/bastille main.c -L/usr/include -lreadline && rm -v main.c /tmp/rockyou15.txt
 CMD /usr/sbin/sshd -D
