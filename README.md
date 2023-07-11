@@ -1,9 +1,11 @@
 # Bastille
 
+Go directly to jail, do not pass go, do not collect $200!
+
+
+
 Bastille is a retro style shell escape vulnerability. The user is dropped into a restricted shell and must escape to get access to features that they wouldnt normally have.
-
-
-For BSIDEs, Bastille is run behind an SSH server that is using a top password from rockyou. The competitors must brute force their way onto the server and then escape the shell to plant the flag.
+For DEF CON, Bastille is run behind an SSH server with a known password. The competitors must SSH onto the server and then escape the shell to plant the flag.
 
 
 ## Running
@@ -39,7 +41,7 @@ services:
   [bastille] cwd > sed e
   ```
 
-3. Write to teh flag without escaping
+3. Write to the flag without escaping
   ```
   [bastille] cwd > tee a a a a a a a a a a a a a a a a a a a a /flags/flag.txt
   <YOUR FLAG HERE> 

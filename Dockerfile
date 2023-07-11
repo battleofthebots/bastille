@@ -13,29 +13,20 @@ WORKDIR /opt
 RUN apt-get update && \
     apt-get install -y bc libreadline-dev openssh-server
 
-# Password for sshd is one of these
-COPY rockyou15.txt /tmp
-
-# Bins they are allowed to have in jail AWK/SED is the escape trick here, see GTFO bins, they can also escape using SSH
+# Bins they are allowed to have in jail 
 # CWD for the jail
 # Bin dir for the jail
-ARG ALLOWED="echo sed tee bind mkdir xxd strings pwd ls fmt file dd bc make cp whoami su bastille cat"
+ARG ALLOWED="echo awk tee bind mkdir xxd strings pwd ls fmt file dd bc make cp whoami su bastille cat"
 ARG JAIL_CWD=/opt/cwd
 ARG JAIL_BIN=/opt/bin
 
 
-# Build the jail and setup ssh  with a random user password
-RUN mkdir -p $JAIL_BIN $JAIL_CWD; for i in $ALLOWED; do ln -s $(which $i) $JAIL_BIN/$i; done && \
-    echo "#!/bin/sh\necho You are not allowed to ssh!" > /opt/bin/ssh && \
-    chmod +x /opt/bin/ssh && \
-    chmod 555 $JAIL_BIN && \
-    chmod 777 $JAIL_CWD && \
-# SSHD stuff
-    useradd user -s /bin/bastille -d $JAIL_CWD && \
+# Build the jail and setup ssh with a random user password
+RUN useradd user -s /bin/bastille -d $JAIL_CWD && \
     mkdir -p /run/sshd && \
     chmod 700 /run/sshd && \
     ssh-keygen -A && \
-    echo "user:$(shuf -n 1 /tmp/rockyou15.txt)" | tee /dev/stderr | chpasswd && \
+    echo "user:password" | tee /dev/stderr | chpasswd && \
     echo 'UsePAM no\nPermitTunnel no\nAcceptEnv LANG LC_*' > /etc/ssh/sshd_config
 
 

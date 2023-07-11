@@ -263,7 +263,10 @@ int main(int argc, char **argv, char **envp)
       return 0;
     }
 
-    putenv("PATH=/opt/bin");
+    //putenv("PATH=/opt/bin");
+    char * shell = malloc(sizeof(char) * 1024);
+    sprintf(shell, "SHELL=%s", argv[0]);
+    putenv(shell);
     putenv("TERM=xterm");
     DEBUG_PRINT("PATH = %s\n", getenv("PATH"));
     load_env(".env");
