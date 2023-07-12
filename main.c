@@ -24,6 +24,8 @@
   } while (false)
 #endif
 
+extern const char *__progname;
+
 // The original path we start in goes here
 char cwd[1024];
 
@@ -318,8 +320,17 @@ int main(int argc, char **argv, char **envp)
     return 0;
   }
 
-  // putenv("PATH=/opt/bin");
-  setenv("SHELL", argv[0], 1);
+  char * jail_path = getenv("JAIL_PATH");
+  if (jail_path == NULL) {
+    printf("[bastille] JAIL_PATH not set. Defaulting to ./bin\n");
+    jail_path = "./bin";
+  }
+  setenv("PATH", jail_path, 1);
+
+  if (strncmp(argv[0], "-", 1) != 0) {
+    DEBUG_PRINT("User mode detected, manually setting shell to '%s'\n", argv[0]);
+    setenv("SHELL",argv[0], 1);
+  }
   putenv("TERM=xterm");
   DEBUG_PRINT("PATH = %s\n", getenv("PATH"));
   load_env(".env");
