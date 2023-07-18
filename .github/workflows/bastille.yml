@@ -108,7 +108,7 @@ jobs:
       # Runs a single command using the runners shell
       - name: ziping up bastille.zip
         run: |
-          cd releases && zip ../bastille.zip *
+          cd release && zip ../bastille.zip *
 
       - name: Copy files to S3
         run: |
