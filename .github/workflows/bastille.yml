@@ -112,4 +112,4 @@ jobs:
 
       - name: Copy files to S3
         run: |
-          aws s3 cp ./releases/bastille.zip s3://challenge-binaries/bastille/
+          aws s3 cp ./release/bastille.zip s3://challenge-binaries/bastille/
