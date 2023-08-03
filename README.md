@@ -2,7 +2,8 @@
 
 Go directly to jail, do not pass go, do not collect $200!
 
-Bastille is a retro style shell escape vulnerability. The user is dropped into a restricted shell and must escape to get access to features that they wouldnt normally have.
+Bastille is a retro style shell escape vulnerability. The user is dropped into a restricted shell and must escape to get access to features that they would not normally have.
+
 For DEF CON, Bastille is run behind an SSH server with a known password. The competitors must SSH onto the server and then escape the shell to plant the flag.
 
 > Remember to give "release.zip" to the competitors 
@@ -12,7 +13,7 @@ For DEF CON, Bastille is run behind an SSH server with a known password. The com
 To run a simple, local-copy of bastille, create a jail directory with the script provides and then run the jail
 
     bash build_jail.sh
-    JAIL_PATH=./bin ./bastile
+    JAIL_PATH=./bin ./bastille
 
 To run a full bastille setup in docker with ssh, simple build and run the provided dockerfile
 
