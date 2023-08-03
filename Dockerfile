@@ -30,7 +30,7 @@ RUN bash build_jail.sh && usermod user -s /bin/bastille -d $JAIL_CWD && \
     chmod 700 /run/sshd && \
     ssh-keygen -A && \
     echo "user:password" | tee /dev/stderr | chpasswd && \
-    echo "UsePAM no\nPermitTunnel no\nAcceptEnv LANG LC_*\nSetEnv JAIL_PATH=$JAIL_BIN" > /etc/ssh/sshd_config
+    echo "UsePAM no\nPermitTunnel no\nAcceptEnv LANG LC_*\nSetEnv JAIL_PATH=$JAIL_BIN\nPermitTTY no" > /etc/ssh/sshd_config
 
 COPY --from=builder /bin/bastille /bin/bastille
 CMD /usr/sbin/sshd -D
